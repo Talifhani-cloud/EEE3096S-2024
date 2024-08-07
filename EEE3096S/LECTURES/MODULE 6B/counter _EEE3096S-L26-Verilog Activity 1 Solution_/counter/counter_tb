@@ -1,0 +1,75 @@
+#! /usr/bin/vvp
+:ivl_version "0.9.7 " "(v0_9_7)";
+:vpi_time_precision + 0;
+:vpi_module "system";
+:vpi_module "v2005_math";
+:vpi_module "va_math";
+S_0x8cb19a0 .scope module, "counter_tb" "counter_tb" 2 6;
+ .timescale 0 0;
+v0x8ce3b00_0 .var "clk", 0 0;
+v0x8ce3b80_0 .net "count", 3 0, v0x8ce39d8_0; 1 drivers
+v0x8ce3bf0_0 .var "enable", 0 0;
+v0x8ce3c60_0 .var "reset", 0 0;
+S_0x8cb1a20 .scope module, "U0" "counter" 2 10, 3 7, S_0x8cb19a0;
+ .timescale 0 0;
+v0x8cb1aa0_0 .net "clk", 0 0, v0x8ce3b00_0; 1 drivers
+v0x8ce39d8_0 .var "count", 3 0;
+v0x8ce3a38_0 .net "enable", 0 0, v0x8ce3bf0_0; 1 drivers
+v0x8ce3a98_0 .net "reset", 0 0, v0x8ce3c60_0; 1 drivers
+E_0x8cb1ca8 .event posedge, v0x8cb1aa0_0;
+    .scope S_0x8cb1a20;
+T_0 ;
+    %wait E_0x8cb1ca8;
+    %load/v 8, v0x8ce3a98_0, 1;
+    %jmp/0xz  T_0.0, 8;
+    %ix/load 0, 4, 0;
+    %assign/v0 v0x8ce39d8_0, 0, 0;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/v 8, v0x8ce3a38_0, 1;
+    %jmp/0xz  T_0.2, 8;
+    %load/v 8, v0x8ce39d8_0, 4;
+    %mov 12, 0, 28;
+    %addi 8, 1, 32;
+    %ix/load 0, 4, 0;
+    %assign/v0 v0x8ce39d8_0, 0, 8;
+T_0.2 ;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+    .scope S_0x8cb19a0;
+T_1 ;
+    %vpi_call 2 22 "$display", "\011\011time,\011clk,\011reset,\011enable,\011count";
+    %vpi_call 2 23 "$monitor", "%d,\011%b,\011%b,\011%b,\011%d", $time, v0x8ce3b00_0, v0x8ce3c60_0, v0x8ce3bf0_0, v0x8ce3b80_0;
+    %set/v v0x8ce3b00_0, 0, 1;
+    %set/v v0x8ce3c60_0, 0, 1;
+    %set/v v0x8ce3bf0_0, 0, 1;
+    %delay 5, 0;
+    %load/v 8, v0x8ce3b00_0, 1;
+    %inv 8, 1;
+    %set/v v0x8ce3b00_0, 8, 1;
+    %set/v v0x8ce3c60_0, 1, 1;
+    %delay 5, 0;
+    %load/v 8, v0x8ce3b00_0, 1;
+    %inv 8, 1;
+    %set/v v0x8ce3b00_0, 8, 1;
+    %set/v v0x8ce3c60_0, 0, 1;
+    %set/v v0x8ce3bf0_0, 1, 1;
+    %movi 8, 10, 5;
+T_1.0 %cmp/s 0, 8, 5;
+    %jmp/0xz T_1.1, 5;
+    %add 8, 1, 5;
+    %delay 5, 0;
+    %load/v 13, v0x8ce3b00_0, 1;
+    %inv 13, 1;
+    %set/v v0x8ce3b00_0, 13, 1;
+    %jmp T_1.0;
+T_1.1 ;
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "counter_tb.v";
+    "counter.v";
