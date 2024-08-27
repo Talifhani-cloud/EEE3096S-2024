@@ -66,7 +66,7 @@ uint32_t TIM2_Ticks = ((uint32_t)(TIM2CLK/F_SIGNAL))/NS;
 
  // How often to write new LUT value
 
-uint32_t DestAddress = (uint32_t) &(TIM3->CCR3); // Write LUT TO TIM3->CCR3 to modify PWM duty cycle
+uint32_t Destination = (uint32_t) &(TIM3->CCR3); // Write LUT TO TIM3->CCR3 to modify PWM duty cycle
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,11 +121,11 @@ HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
 HAL_TIM_OC_Start(&htim2,TIM_CHANNEL_1);
 __HAL_TIM_SET_AUTORELOAD(&htim2,TIM2_Ticks);
   // TODO: Start DMA in IT mode on TIM2->CH1; Source is LUT and Dest is TIM3->CCR3; start with Sine LUT
-uint32_t DestAddress = (uint32_t) &(TIM3->CCR3);
+uint32_t Destination = (uint32_t) &(TIM3->CCR3);
 HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)saw_LUT, (uint32_t)&TIM3->CCR3, NS);
 
 
-//HAL_TIM_PWM_Start_DMA(&htim2,TIM_CHANNEL_1,(uint32_t*)Sin_LUT,DestAddress,sizeof(Sin_LUT)/sizeof(Sin_LUT[0]));
+//HAL_TIM_PWM_Start_DMA(&htim2,TIM_CHANNEL_1,(uint32_t*)Sin_LUT,Destination,sizeof(Sin_LUT)/sizeof(Sin_LUT[0]));
 
   // TODO: Write current waveform to LCD ("Sine")
 init_LCD();
@@ -134,7 +134,7 @@ lcd_command(CLEAR);
 
   // TODO: Enable DMA (start transfer from LUT to CCR)
 
-  HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)saw_LUT, DestAddress, NS);
+  HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)saw_LUT, Destination, NS);
   __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
   HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);
   /* USER CODE END 2 */
@@ -361,13 +361,13 @@ static void MX_GPIO_Init(void)
 void EXTI0_1_IRQHandler(void)
 {
 	// TODO: Debounce using HAL_GetTick()
-	  static uint32_t last_press_time = 0;
+	  static uint32_t last_time = 0;
 	  uint32_t current_time = HAL_GetTick();
 
 	      // Debounce check
-	  if (current_time - last_press_time > 200)
+	  if (current_time - last_time > 100)
 	  {
-	    last_press_time = current_time;
+	    last_time = current_time;
 
 	      // TODO: Disable DMA transfer and abort IT, then start DMA in IT mode with new LUT and re-enable transfer DONE
 	      // HINT: Consider using C's "switch" function to handle LUT changes
@@ -375,27 +375,27 @@ void EXTI0_1_IRQHandler(void)
 	      // Disable DMA and abort IT mode
 	      HAL_DMA_Abort_IT(&hdma_tim2_ch1);
 
-	      static uint8_t current_waveform = 0;
+	      static uint8_t waveform = 0;
 
-	      switch (current_waveform)
+	      switch (waveform)
 	      {
 	        case 0:
-	          HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)saw_LUT, DestAddress, NS);
-	              current_waveform = 1;
+	          HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)saw_LUT, Destination, NS);
+	              waveform = 1;
 	              lcd_command(CLEAR);
 	              lcd_putstring("sawtooth");
 	              break;
 
 	        case 1:
-	          HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)triangle_LUT, DestAddress, NS);
-	              current_waveform = 2;
+	          HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)triangle_LUT, Destination, NS);
+	              waveform = 2;
 	              lcd_command(CLEAR);
 	              lcd_putstring("triangle");
 	              break;
 
 	        case 2:
-	          HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)Sin_LUT, DestAddress, NS);
-	              current_waveform = 0;
+	          HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)Sin_LUT, Destination, NS);
+	              waveform = 0;
 	              lcd_command(CLEAR);
 	              lcd_putstring("Sine");
 	              break;
